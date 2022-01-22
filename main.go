@@ -1,15 +1,24 @@
 package main
 
 import (
-	"github.com/valyala/fasthttp"
+	"github.com/mayankkumar2/golbrc/pkg/proxy"
+	"github.com/mayankkumar2/golbrc/pkg/server"
+	"log"
+	"os"
 )
 
+
+
 func main() {
-	fasthttp.ListenAndServe(":8080", func(ctx *fasthttp.RequestCtx) {
-		ctx.Request.SetHost("127.0.0.1:8000")
-		err := fasthttp.Do(&ctx.Request, &ctx.Response)
-		if err != nil {
-			return
-		}
-	})
+	_logger := server.NewLogger(os.Stdout)
+
+	s := server.NewServer(proxy.ProxyMiddleware, _logger)
+
+	if err := s.StartServer(server.Options{
+		TLSEnabled: false,
+		Address: "0.0.0.0",
+		Port: "8080",
+	}); err != nil {
+		log.Fatalln(err)
+	}
 }
